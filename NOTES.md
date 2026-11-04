@@ -51,3 +51,9 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 - First attempt OOM'd in the one-time Mimi latent precompute (24l model already on GPU). Fix: run `training.scripts.precompute_latents --batch-size 4` separately first.
 - 30 steps, micro-batch 4 x 16 accumulation (effective 64), 8-bit AdamW, CPU EMA: peak 5.6 GiB, 0.30–0.36 steps/s (~3 s/step). Loss ~0.48 and grad norm ~0.75 from the start, in line with the upstream README's expectations.
 - Implication: 3,000 steps ≈ 2.5 h; 2,000 steps ≈ 1.7 h.
+
+## Evaluation setup
+- CER via greedy CTC wav2vec2: Hindi `theainerd/Wav2Vec2-large-xlsr-hindi`, English `facebook/wav2vec2-base-960h`. 10 held-out validation sentences per source, voice prompt `voices/indictts_hi_female.wav`.
+- ASR floor on the real recordings: IndicTTS-hi 0.179, Rasa-hi 0.156, LibriTTS-en 0.010.
+- Base model (released English Pocket TTS, 3 sentences/source sanity run): Hindi ~0.67–0.69 (unintelligible), English 0.006.
+- Note: EMA decay 0.999 has a ~1,000-step horizon, so early EMA checkpoints still carry much of the random-init text embedding; evaluate raw (`#raw`) weights too.
