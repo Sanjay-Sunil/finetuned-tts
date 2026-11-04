@@ -47,7 +47,7 @@ def main(
     if upload:
         api = HfApi()
         api.create_repo(repo, repo_type="dataset", private=True, exist_ok=True)
-        api.upload_large_folder(folder_path=str(out_dir), repo_id=repo, repo_type="dataset")
+        api.upload_folder(folder_path=str(out_dir), repo_id=repo, repo_type="dataset")
         print(f"uploaded to https://huggingface.co/datasets/{repo}")
 
 
