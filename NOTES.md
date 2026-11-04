@@ -46,3 +46,8 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 - IndicTTS Hindi transcripts are literary Hindi (epics, no digits, no Latin words). Code-switching therefore relies on the pretrained English backbone plus English data.
 - Modal GPU functions require a payment method; card declined. Backup plan: local RTX 4060 Laptop (8 GB, bf16-capable).
 - Rasa Hindi profile: 45.8 h (24.4 F / 21.4 M), no Latin script, but command/shopping/banking styles (ALEXA, BB, DIGI, UMANG, CONV) contain many English loanwords written in Devanagari ("साउंड म्यूट करो", "पर्सनल लोन"). Chosen as a subset (~8–10 h) because local bandwidth (~2 MB/s) makes the full 17.6 GB impractical.
+
+## Laptop smoke test (2026-11-04, RTX 4060 Laptop 8 GB)
+- First attempt OOM'd in the one-time Mimi latent precompute (24l model already on GPU). Fix: run `training.scripts.precompute_latents --batch-size 4` separately first.
+- 30 steps, micro-batch 4 x 16 accumulation (effective 64), 8-bit AdamW, CPU EMA: peak 5.6 GiB, 0.30–0.36 steps/s (~3 s/step). Loss ~0.48 and grad norm ~0.75 from the start, in line with the upstream README's expectations.
+- Implication: 3,000 steps ≈ 2.5 h; 2,000 steps ≈ 1.7 h.
