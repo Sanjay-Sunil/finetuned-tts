@@ -46,7 +46,26 @@ Preprocessing (`hinglish_tts/prepare_data.py`, `hinglish_tts/text_norm.py`):
 
 ## Approach
 
-APPROACH
+### Decisions
+
+| # | Decision | Choice | Why |
+| --- | --- | --- | --- |
+| 1 | Data | IndicTTS Hindi + Rasa Hindi subset + one LibriTTS-R shard | Studio speech with human transcripts only. Rasa's command, shopping and banking styles contain English loanwords spoken by Indian speakers; LibriTTS-R teaches Latin-script English. Subset sized to a slow connection. |
+| 2 | Script / tokenizer | Devanagari for Hindi, Latin for English; new 4,000-piece SentencePiece | Matches the human transcripts, so no lossy transliteration. The released English tokenizer has no Devanagari. |
+| 3 | Model | 24-layer teacher, `finetune_language` recipe, no distillation | One run fits the budget; distilling to the 6-layer CPU student is future work. |
+| 4 | Checkpoint | Lowest held-out CER, then a listening check | CER measures intelligibility, not accent. |
+
+### Compute
+
+Modal would not accept a payment card, so training ran on a laptop RTX 4060 (8 GB). `hinglish_tts/train_lowmem.py` wraps the upstream trainer with 8-bit AdamW and a CPU-side EMA, and the recipe uses micro-batches of 4 with 16-step accumulation (effective batch 64) and clips capped at 12 s. Peak memory 5.6 GB, about 0.45 steps/s: 6,000 steps in about 3.7 h. The Mimi latents are precomputed in a separate process first; doing it inside the trainer ran out of memory.
+
+### What happened during training
+
+- The new text embedding starts random, so at step 500 the model produced Hindi-sounding speech that ignored the text (CER about 0.64, close to the English base model's 0.67).
+- Hindi started following the text between steps 1,000 and 1,500; English, about 20% of the data, improved more slowly.
+- With EMA decay 0.999 the averaged weights lag the raw ones early on (worse at 2,000 steps), then overtake them from 3,000 steps.
+
+Full log of measurements and failures: `NOTES.md`.
 
 ## Reproduce
 

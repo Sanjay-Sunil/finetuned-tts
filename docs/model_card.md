@@ -20,8 +20,8 @@ Kyutai's 24-layer Pocket TTS teacher fine-tuned for Indian Hinglish: Hindi in De
 
 ```bash
 pip install pocket-tts
-pocket-tts generate --config hf://REPO_ID/config.yaml \
-    --voice hf://REPO_ID/voices/indictts_hi_female.wav \
+pocket-tts generate --config hf://zxnjxd/pocket-tts-finetuned/config.yaml \
+    --voice hf://zxnjxd/pocket-tts-finetuned/voices/indictts_hi_female.wav \
     --text "कल मेरा exam है, please disturb मत करना।"
 ```
 
@@ -41,4 +41,8 @@ RESULTS_TABLE
 
 ## Limitations
 
-LIMITATIONS
+- Trained on about 12 h, far below the 100+ h the Pocket TTS authors recommend; pronunciation of rare words is unreliable.
+- English words in Latin script are the weakest part (see the CER table): only 2.5 h of English, read by American and British speakers, so English words lean towards those accents.
+- Romanized Hindi input is out of scope.
+- Very little truly code-mixed training speech; code-switching relies on Rasa's Devanagari loanwords plus the English data.
+- 24-layer model only: slower on CPU than the released 6-layer Pocket TTS.
