@@ -8,7 +8,7 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 | 1 | Dataset | IndicTTS Hindi only; + Indian English; + Rasa Hindi (all or subset) | IndicTTS Hindi + Rasa Hindi subset (command/conversational styles) + SPICOR English if access arrives | Studio recordings, human transcripts. HF mirror (SPRINGLab/IndicTTS-Hindi) is ungated but subject to the "License For Use of Indic TTS" (IIT Madras), not plain CC BY. SPRINGLab has no English subset → Indian English candidate: SPICOR TTS_1.0 (IISc SPIRE, human quality-checked, form access). Fits ~10–20 h budget. | 2026-11-04 |
 | 2 | Tokenizer / script | Devanagari+Latin; Roman only; both | Devanagari (Hindi) + Latin (English), new SentencePiece | Matches dataset script, so no lossy transliteration step. Email allows either script. Cost: Roman-Hindi input is out of scope. | 2026-11-04 |
 | 3 | Model size / recipe | 24l only; 24l + distill to 6l | 24l teacher, finetune_language recipe, no distillation | $30 / ~5 h budget only covers one training run; distillation listed as future work. | 2026-11-04 |
-| 4 | Final checkpoint | auto by CER; CER shortlist + listening | CER shortlist of 2, user listens and picks | CER measures intelligibility, not accent; a human ear is needed for accent. | 2026-11-04 (method) |
+| 4 | Final checkpoint | step 4000 EMA vs step 5000 EMA (CER shortlist) | step 4000 EMA | Best held-out CER (Hindi 0.294 / 0.341, English 0.564) and preferred on listening; later steps overfit. | 2026-11-05 |
 
 ## Hour 1 — Understanding the model
 

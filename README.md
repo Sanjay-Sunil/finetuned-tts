@@ -23,7 +23,20 @@ python -m hinglish_tts.infer --config hf://zxnjxd/pocket-tts-finetuned/config.ya
 
 ## Results
 
-RESULTS_TABLE
+Character error rate (CER, lower is better) on 10 held-out sentences per source, voice prompt `voices/indictts_hi_female.wav`, greedy wav2vec2 CTC transcription (`hinglish_tts/eval_cer.py`). "Real recordings" is the ASR's error on the human audio itself, the best score reachable with this ASR.
+
+| Model | IndicTTS Hindi | Rasa Hindi | English (LibriTTS-R) |
+| --- | --- | --- | --- |
+| Real recordings (ASR floor) | 0.179 | 0.156 | 0.010 |
+| Released Pocket TTS (English) | ~0.67 | ~0.69 | 0.006 |
+| Step 1,000 | 0.482 | 0.552 | 0.731 |
+| Step 2,000 | 0.372 | 0.399 | 0.660 |
+| Step 3,000 (EMA) | 0.350 | 0.346 | 0.636 |
+| **Step 4,000 (EMA), released** | **0.294** | **0.341** | **0.564** |
+| Step 5,000 (EMA) | 0.289 | 0.356 | 0.682 |
+| Step 6,000 (EMA) | 0.337 | 0.386 | 0.638 |
+
+Step 4,000 is released: best overall, preferred in a listening comparison with step 5,000; later steps overfit (about 40 passes over 12 h of data). Code-mixed sentences are not scored, because a single-language ASR cannot transcribe them fairly; they are in `samples/` as before/after audio (`baseline_0N.wav` = released English model, `finetuned_0N.wav` = this model, same voice prompt). With 10 sentences per source, differences under about 0.03 are within noise.
 
 ## Data
 
