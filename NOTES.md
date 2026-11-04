@@ -60,10 +60,12 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 
 ## Training run `hinglish_24l_local` (laptop, launched 2026-11-04 21:23)
 - Data: IndicTTS-hi 2.2 h + Rasa-hi 7.6 h + LibriTTS-R-en 2.5 h = 8,474 train clips; tokenizer 4,000 pieces over all transcripts.
-- ~0.45 steps/s (3,000 steps ≈ 1.9 h). Valid loss: 0.422 @250, 0.391 @500.
+- ~0.45 steps/s (3,000 steps ≈ 1.9 h; ~0.38 while CPU evals run). Valid loss: 0.422 @250, 0.391 @500, 0.337 @750.
 
 | Step | Weights | IndicTTS-hi CER | Rasa-hi CER | LibriTTS-en CER | Notes |
 | --- | --- | --- | --- | --- | --- |
 | — | real recordings (ASR floor) | 0.179 | 0.156 | 0.010 | |
 | — | base English 6L (released) | ~0.67 | ~0.69 | 0.006 | 3 sentences/source |
 | 500 | raw | 0.640 | 0.649 | 0.771 | speech-like, not yet following text; English collapsed with the new tokenizer |
+| 1000 | raw | 0.482 | 0.552 | 0.731 | Hindi words start to come through (partial); English still unintelligible |
+- Dataset uploaded (private): zxnjxd/pocket-tts-finetuned-data, 8,564 clips + manifests + card.
