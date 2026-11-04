@@ -1,0 +1,93 @@
+# Hinglish Pocket TTS
+
+A fine-tune of [Kyutai Pocket TTS](https://github.com/kyutai-labs/pocket-tts) (24-layer teacher) for Indian Hinglish: Hindi in Devanagari, English words in Latin script, in the same sentence, with an Indian accent.
+
+- Model (private): `https://huggingface.co/<user>/hinglish-pocket-tts`
+- Training data (private): `https://huggingface.co/datasets/<user>/hinglish-pocket-tts-data`
+
+## Quick start
+
+```bash
+pip install pocket-tts
+pocket-tts generate --config hf://<user>/hinglish-pocket-tts/config.yaml \
+    --voice voices/indictts_hi_female.wav \
+    --text "कल मेरा exam है, please disturb मत करना।"
+```
+
+Numbers and symbols must be written as words for the stock CLI. `hinglish_tts.infer` does that for you:
+
+```bash
+python -m hinglish_tts.infer --config hf://<user>/hinglish-pocket-tts/config.yaml \
+    --voice voices/indictts_hi_female.wav --text "मुझे 2,800 रुपये चाहिए, please."
+```
+
+## Results
+
+RESULTS_TABLE
+
+## Data
+
+| Source | Language | Hours used | Speakers | Transcripts | Licence |
+| --- | --- | --- | --- | --- | --- |
+| [IndicTTS Hindi](https://huggingface.co/datasets/SPRINGLab/IndicTTS-Hindi) (IIT Madras) | Hindi | 2.2 | 1 (female) | Human, studio read speech | Indic TTS licence (research use) |
+| [Rasa](https://huggingface.co/datasets/ai4bharat/Rasa) Hindi (AI4Bharat) | Hindi, incl. English loanwords in Devanagari | 7.6 | 2 | Human, studio read speech | CC BY 4.0 |
+| [LibriTTS-R](https://huggingface.co/datasets/mythicinfinity/libritts_r) train-clean-100, one shard | English | 2.5 | 15 | Human (book text, aligned) | CC BY 4.0 |
+
+No ASR-generated transcripts, TTS-generated audio or LLM-written text is used. Two disclosures: LibriTTS-R audio is LibriTTS passed through a speech-restoration model (the speech itself is human); and word timestamps come from wav2vec2 forced alignment of the human transcripts, which places existing words in time and never writes text.
+
+Preprocessing (`hinglish_tts/prepare_data.py`, `hinglish_tts/text_norm.py`):
+
+1. Decode, mix to mono, resample to 24 kHz, peak-normalize, store as FLAC.
+2. Keep clips of 1–15 s; drop silent clips. Rasa: drop the emotional styles (anger, disgust, fear, happy, sad, surprise) and keep command, shopping, banking, conversational and reading styles.
+3. Normalize text: digits to words (Hindi words in Devanagari sentences, Indian-English words otherwise, lakh/crore aware), `₹ % & +` to words, danda `।` to `.`, curly quotes to straight.
+4. Hold out 15–20 clips per speaker group for validation.
+5. Forced alignment: `theainerd/Wav2Vec2-large-xlsr-hindi` for Hindi, `facebook/wav2vec2-base-960h` for English (upstream `training/scripts/align_data.py`).
+6. Tokenizer: SentencePiece unigram, 4,000 pieces, character coverage 1.0, fitted on all transcripts.
+
+## Approach
+
+APPROACH
+
+## Reproduce
+
+```bash
+git clone https://github.com/kyutai-labs/pocket-tts third_party/pocket-tts
+git -C third_party/pocket-tts checkout 2e117a1e7df06323c9df0315c671f3cbc3b8d9fc
+python -m venv .venv-gpu && .venv-gpu/bin/pip install -e third_party/pocket-tts \
+    transformers sphn jiwer pyyaml tqdm soundfile pyarrow scipy typer sentencepiece bitsandbytes
+
+# data (see the Data section for the exact shards)
+python -m hinglish_tts.prepare_data SPRINGLab/IndicTTS-Hindi data/local/indictts_hi --source indictts_hi --speaker-col gender
+python -m hinglish_tts.prepare_data ai4bharat/Rasa data/local/rasa_hi --source rasa_hi --prefix Hindi/ \
+    --speaker-col gender --style-col style --exclude-styles ANGER,DISGUST,FEAR,HAPPY,SAD,SURPRISE --max-sec 15
+python -m hinglish_tts.prepare_data mythicinfinity/libritts_r data/local/libritts_en --source libritts_en \
+    --prefix data/train.clean.100/ --text-col text_normalized --speaker-col speaker_id --max-sec 15
+
+# from third_party/pocket-tts: align, tokenizer, latents, train
+python -m training.scripts.align_data <in.jsonl> <out_aligned.jsonl> --model <ctc model>
+python -m training.scripts.train_tokenizer ../../data/local/mix/tokenizer ../../data/local/mix/*_aligned.jsonl --character-coverage 1.0
+python -m training.scripts.precompute_latents ../../configs/hinglish_24l_local.yaml --batch-size 4
+PYTHONPATH=../.. python -m hinglish_tts.train_lowmem ../../configs/hinglish_24l_local.yaml
+
+# evaluate and package (from the repo root)
+python -m hinglish_tts.eval_cer --voice voices/indictts_hi_female.wav --model gt=reference \
+    --model base=language:english --model ft=configs/inference_local.yaml:runs/hinglish_24l_local/checkpoint_00003000.pt
+python -m hinglish_tts.package_hf runs/hinglish_24l_local/checkpoint_00003000.pt --repo <user>/hinglish-pocket-tts --upload
+```
+
+`modal_app.py` runs the same pipeline on a Modal H100 (batch 64, no accumulation) with `configs/hinglish_24l.yaml`.
+
+## Repository layout
+
+| Path | What it is |
+| --- | --- |
+| `hinglish_tts/text_norm.py` | Number, symbol and danda normalization shared by training and inference |
+| `hinglish_tts/prepare_data.py` | HF parquet datasets to 24 kHz FLAC + manifests |
+| `hinglish_tts/train_lowmem.py` | Runs upstream training on an 8 GB GPU (8-bit AdamW, CPU-side EMA) |
+| `hinglish_tts/infer.py` | Inference with text normalization |
+| `hinglish_tts/eval_cer.py` | CER on held-out sentences with per-language wav2vec2 ASR |
+| `hinglish_tts/package_hf.py` | Export a checkpoint in the official Pocket TTS layout and upload |
+| `configs/` | Training configs (laptop and Modal) and the local inference config |
+| `modal_app.py` | Same pipeline on Modal |
+| `samples/` | Baseline sentences and before/after audio |
+| `NOTES.md` | Decision log, measurements and failures |
