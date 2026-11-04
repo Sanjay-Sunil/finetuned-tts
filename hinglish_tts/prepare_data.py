@@ -52,6 +52,8 @@ def process_shard(
     speaker_col: str | None,
     min_sec: float,
     max_sec: float,
+    style_col: str | None = None,
+    exclude_styles: frozenset[str] = frozenset(),
 ) -> list[dict]:
     local = hf_hub_download(repo, filename, repo_type="dataset")
     pf = pq.ParquetFile(local)
@@ -63,6 +65,8 @@ def process_shard(
     for batch in pf.iter_batches(batch_size=64):
         for rec in batch.to_pylist():
             idx += 1
+            if style_col and str(rec[style_col]) in exclude_styles:
+                continue
             text = normalize(str(rec[text_col] or ""))
             if not text:
                 continue
@@ -99,6 +103,9 @@ def main(
     audio_col: Annotated[str, typer.Option()] = "audio",
     speaker_col: Annotated[str | None, typer.Option()] = None,
     max_hours: Annotated[float, typer.Option(help="stop adding shards past this")] = 1e9,
+    shards: Annotated[str, typer.Option(help="comma-separated parquet names to use (default: all)")] = "",
+    style_col: Annotated[str | None, typer.Option()] = None,
+    exclude_styles: Annotated[str, typer.Option(help="comma-separated style values to drop")] = "",
     min_sec: Annotated[float, typer.Option()] = 1.0,
     max_sec: Annotated[float, typer.Option()] = 20.0,
     valid_per_speaker: Annotated[int, typer.Option()] = 20,
@@ -110,6 +117,9 @@ def main(
         for f in HfApi().list_repo_files(repo, repo_type="dataset")
         if f.endswith(".parquet") and f.startswith(prefix) and "test" not in Path(f).name
     )
+    if shards:
+        wanted = set(shards.split(","))
+        files = [f for f in files if Path(f).name in wanted]
     # Shards are often sorted by speaker, so visit them in a fixed shuffled order
     # to keep both speakers when max_hours cuts the list short.
     random.Random(seed).shuffle(files)
@@ -118,7 +128,8 @@ def main(
         futures = [
             pool.submit(
                 process_shard, repo, f, out_dir, source, text_col, audio_col,
-                speaker_col, min_sec, max_sec,
+                speaker_col, min_sec, max_sec, style_col,
+                frozenset(filter(None, exclude_styles.split(","))),
             )
             for f in files
         ]
