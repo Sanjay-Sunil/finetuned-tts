@@ -68,4 +68,5 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 | — | base English 6L (released) | ~0.67 | ~0.69 | 0.006 | 3 sentences/source |
 | 500 | raw | 0.640 | 0.649 | 0.771 | speech-like, not yet following text; English collapsed with the new tokenizer |
 | 1000 | raw | 0.482 | 0.552 | 0.731 | Hindi words start to come through (partial); English still unintelligible |
+| 1500 | raw | 0.361 | 0.438 | 0.707 | Hindi mostly recognisable; English barely moving (new Latin pieces undertrained, English ~20% of data) |
 - Dataset uploaded (private): zxnjxd/pocket-tts-finetuned-data, 8,564 clips + manifests + card.
