@@ -1,0 +1,49 @@
+# Fine-tune the released 24-layer English Pocket TTS into Hindi + Indian English.
+# Based on pocket-tts training/configs/finetune_language.yaml: same objective and
+# learning rate, a fresh text embedding for the new Devanagari+Latin tokenizer,
+# but sized for ~10-20 h of data and a few GPU-hours.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.lookup_table.tokenizer: sentencepiece
+  flow_lm.lookup_table.tokenizer_path: /vol/data/mix/tokenizer.model
+start_from_pretrained: true
+reset_text_embedding: true
+
+data:
+  train_jsonl: /vol/data/mix/train_aligned.jsonl
+  valid_jsonl: /vol/data/mix/valid_aligned.jsonl
+  max_duration_sec: 20.0
+  max_voice_prompt_sec: 5.0
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.2
+voice_dropout: 0.2
+
+optim:
+  lr: 2e-4
+  schedule: constant
+  warmup_steps: 500
+
+run_dir: /vol/runs/hinglish_24l
+batch_size: 64
+grad_accum_steps: 1
+max_steps: 8000
+compile: false  # torch.compile warm-up costs more than it saves on a short run
+stats_ema_steps: 1000
+ema_decay: 0.999
+log_freq: 50
+valid_freq: 500
+ckpt_freq: 1000
+num_ckpt_keep: 8
+sample_freq: 1000
+sample_cfg_coef: 2.0
+sample_sentences:
+  - "कल मेरा exam है, please disturb मत करना."
+  - "आपका appointment confirm हो गया है."
+  - "मैं office जा रहा हूँ, will call you later."
+  - "मुझे लगता है कि this project is going really well."
