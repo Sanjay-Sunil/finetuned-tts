@@ -70,3 +70,15 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 | 1000 | raw | 0.482 | 0.552 | 0.731 | Hindi words start to come through (partial); English still unintelligible |
 | 1500 | raw | 0.361 | 0.438 | 0.707 | Hindi mostly recognisable; English barely moving (new Latin pieces undertrained, English ~20% of data) |
 - Dataset uploaded (private): zxnjxd/pocket-tts-finetuned-data, 8,564 clips + manifests + card.
+
+## Unattended schedule (started 2026-11-04 22:51)
+`scripts/run_extended_training.sh` (run under `systemd-inhibit`, detached): waits for the 3,000-step job, resumes the same run to 6,000 steps, and scores every 1,000-step checkpoint (raw + EMA) into `outputs/eval/summary.tsv`. Every scored checkpoint is hard-linked into `runs/hinglish_24l_local/keep/`.
+
+### Finishing by hand
+1. Progress: `tail runs/extended.log`, `cat outputs/eval/summary.tsv`.
+2. Pick the step with the lowest Hindi CER, then listen to its clips in `outputs/eval/step<N>_raw/` vs `_ema/`.
+3. After-clips for the video:
+   `.venv-gpu/bin/python -m hinglish_tts.infer --config configs/inference_local.yaml --checkpoint runs/hinglish_24l_local/keep/checkpoint_0000<N>.pt --voice voices/indictts_hi_female.wav --sentences samples/baseline_sentences.txt --out-dir samples/finetuned --prefix finetuned_`
+4. Upload the model (private): `.venv-gpu/bin/python -m hinglish_tts.package_hf runs/hinglish_24l_local/keep/checkpoint_0000<N>.pt --repo zxnjxd/pocket-tts-finetuned --upload` (add `--raw` if raw weights won).
+5. Check it loads from the Hub: `.venv-gpu/bin/pocket-tts generate --config hf://zxnjxd/pocket-tts-finetuned/config.yaml --voice voices/indictts_hi_female.wav --text "आपका appointment confirm हो गया है।"`
+6. Fill RESULTS_TABLE / APPROACH / LIMITATIONS in README.md and docs/model_card.md, create a fine-grained read-only token for the two repos, record the video, send the email.
