@@ -69,6 +69,11 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 | 500 | raw | 0.640 | 0.649 | 0.771 | speech-like, not yet following text; English collapsed with the new tokenizer |
 | 1000 | raw | 0.482 | 0.552 | 0.731 | Hindi words start to come through (partial); English still unintelligible |
 | 1500 | raw | 0.361 | 0.438 | 0.707 | Hindi mostly recognisable; English barely moving (new Latin pieces undertrained, English ~20% of data) |
+| 2000 | raw / EMA | 0.372 / 0.458 | 0.399 / 0.487 | 0.660 / 0.732 | EMA still lagging |
+| 3000 | raw / EMA | 0.398 / 0.350 | 0.508 / 0.346 | 0.653 / 0.636 | EMA overtakes raw |
+| 4000 | raw / EMA | 0.345 / **0.294** | 0.421 / **0.341** | 0.692 / **0.564** | best overall (EMA) |
+| 5000 | raw / EMA | 0.490 / 0.289 | 0.399 / 0.356 | 0.678 / 0.682 | Hindi flat, English worse |
+| 6000 | raw / EMA | 0.363 / 0.337 | 0.492 / 0.386 | 0.732 / 0.638 | worse: overfitting (~45 passes over 12 h) |
 - Dataset uploaded (private): zxnjxd/pocket-tts-finetuned-data, 8,564 clips + manifests + card.
 
 ## Unattended schedule (started 2026-11-04 22:51)
@@ -82,3 +87,5 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 4. Upload the model (private): `.venv-gpu/bin/python -m hinglish_tts.package_hf runs/hinglish_24l_local/keep/checkpoint_0000<N>.pt --repo zxnjxd/pocket-tts-finetuned --upload` (add `--raw` if raw weights won).
 5. Check it loads from the Hub: `.venv-gpu/bin/pocket-tts generate --config hf://zxnjxd/pocket-tts-finetuned/config.yaml --voice voices/indictts_hi_female.wav --text "आपका appointment confirm हो गया है।"`
 6. Fill RESULTS_TABLE / APPROACH / LIMITATIONS in README.md and docs/model_card.md, create a fine-grained read-only token for the two repos, record the video, send the email.
+
+- Finalists for the listening check: step 4000 EMA and step 5000 EMA (`outputs/finalists/`). Extending past 6,000 steps would not help: held-out CER rises after 4,000–5,000 steps.
