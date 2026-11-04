@@ -1,0 +1,51 @@
+# Laptop variant of hinglish_24l.yaml for an 8 GB GPU (RTX 4060 Laptop):
+# micro-batches of 4 accumulated to an effective batch of 64, clips capped at
+# 12 s, run with hinglish_tts.train_lowmem (8-bit AdamW, CPU-side EMA).
+# Paths are relative to third_party/pocket-tts, the working directory for training.
+model_config: pocket_tts/config/english_2026-04_24l.yaml
+model_overrides:
+  flow_lm.lookup_table.tokenizer: sentencepiece
+  flow_lm.lookup_table.tokenizer_path: ../../data/local/mix/tokenizer.model
+start_from_pretrained: true
+reset_text_embedding: true
+
+data:
+  train_jsonl: ../../data/local/mix/train_aligned.jsonl
+  valid_jsonl: ../../data/local/mix/valid_aligned.jsonl
+  max_duration_sec: 12.0
+  loader_procs: 2
+  max_voice_prompt_sec: 5.0
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.2
+voice_dropout: 0.2
+
+optim:
+  lr: 2e-4
+  schedule: constant
+  warmup_steps: 500
+
+run_dir: ../../runs/hinglish_24l_local
+batch_size: 4
+grad_accum_steps: 16  # effective batch 64 on an 8 GB GPU
+max_steps: 3000
+compile: false  # torch.compile warm-up costs more than it saves on a short run
+stats_ema_steps: 1000
+ema_decay: 0.999
+log_freq: 50
+valid_freq: 250
+num_valid_batches: 10
+ckpt_freq: 500
+num_ckpt_keep: 6
+sample_freq: 500
+sample_cfg_coef: 2.0
+sample_sentences:
+  - "कल मेरा exam है, please disturb मत करना."
+  - "आपका appointment confirm हो गया है."
+  - "मैं office जा रहा हूँ, will call you later."
+  - "मुझे लगता है कि this project is going really well."
