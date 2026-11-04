@@ -9,7 +9,7 @@ Contents: model.safetensors (flow LM + Mimi), tokenizer.model, config.yaml,
 README.md (model card), the voice prompt and the before/after samples.
 
     python -m hinglish_tts.package_hf runs/hinglish_24l_local/checkpoint_00003000.pt \
-        --repo <user>/hinglish-pocket-tts --out dist/model [--raw] [--upload]
+        --repo zxnjxd/pocket-tts-finetuned --out dist/model [--raw] [--upload]
 """
 
 import shutil

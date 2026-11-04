@@ -2,14 +2,14 @@
 
 A fine-tune of [Kyutai Pocket TTS](https://github.com/kyutai-labs/pocket-tts) (24-layer teacher) for Indian Hinglish: Hindi in Devanagari, English words in Latin script, in the same sentence, with an Indian accent.
 
-- Model (private): `https://huggingface.co/<user>/hinglish-pocket-tts`
-- Training data (private): `https://huggingface.co/datasets/<user>/hinglish-pocket-tts-data`
+- Model (private): `https://huggingface.co/zxnjxd/pocket-tts-finetuned`
+- Training data (private): `https://huggingface.co/datasets/zxnjxd/pocket-tts-finetuned-data`
 
 ## Quick start
 
 ```bash
 pip install pocket-tts
-pocket-tts generate --config hf://<user>/hinglish-pocket-tts/config.yaml \
+pocket-tts generate --config hf://zxnjxd/pocket-tts-finetuned/config.yaml \
     --voice voices/indictts_hi_female.wav \
     --text "कल मेरा exam है, please disturb मत करना।"
 ```
@@ -17,7 +17,7 @@ pocket-tts generate --config hf://<user>/hinglish-pocket-tts/config.yaml \
 Numbers and symbols must be written as words for the stock CLI. `hinglish_tts.infer` does that for you:
 
 ```bash
-python -m hinglish_tts.infer --config hf://<user>/hinglish-pocket-tts/config.yaml \
+python -m hinglish_tts.infer --config hf://zxnjxd/pocket-tts-finetuned/config.yaml \
     --voice voices/indictts_hi_female.wav --text "मुझे 2,800 रुपये चाहिए, please."
 ```
 
@@ -72,7 +72,7 @@ PYTHONPATH=../.. python -m hinglish_tts.train_lowmem ../../configs/hinglish_24l_
 # evaluate and package (from the repo root)
 python -m hinglish_tts.eval_cer --voice voices/indictts_hi_female.wav --model gt=reference \
     --model base=language:english --model ft=configs/inference_local.yaml:runs/hinglish_24l_local/checkpoint_00003000.pt
-python -m hinglish_tts.package_hf runs/hinglish_24l_local/checkpoint_00003000.pt --repo <user>/hinglish-pocket-tts --upload
+python -m hinglish_tts.package_hf runs/hinglish_24l_local/checkpoint_00003000.pt --repo zxnjxd/pocket-tts-finetuned --upload
 ```
 
 `modal_app.py` runs the same pipeline on a Modal H100 (batch 64, no accumulation) with `configs/hinglish_24l.yaml`.
