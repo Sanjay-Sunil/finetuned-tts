@@ -57,3 +57,13 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 - ASR floor on the real recordings: IndicTTS-hi 0.179, Rasa-hi 0.156, LibriTTS-en 0.010.
 - Base model (released English Pocket TTS, 3 sentences/source sanity run): Hindi ~0.67–0.69 (unintelligible), English 0.006.
 - Note: EMA decay 0.999 has a ~1,000-step horizon, so early EMA checkpoints still carry much of the random-init text embedding; evaluate raw (`#raw`) weights too.
+
+## Training run `hinglish_24l_local` (laptop, launched 2026-11-04 21:23)
+- Data: IndicTTS-hi 2.2 h + Rasa-hi 7.6 h + LibriTTS-R-en 2.5 h = 8,474 train clips; tokenizer 4,000 pieces over all transcripts.
+- ~0.45 steps/s (3,000 steps ≈ 1.9 h). Valid loss: 0.422 @250, 0.391 @500.
+
+| Step | Weights | IndicTTS-hi CER | Rasa-hi CER | LibriTTS-en CER | Notes |
+| --- | --- | --- | --- | --- | --- |
+| — | real recordings (ASR floor) | 0.179 | 0.156 | 0.010 | |
+| — | base English 6L (released) | ~0.67 | ~0.69 | 0.006 | 3 sentences/source |
+| 500 | raw | 0.640 | 0.649 | 0.771 | speech-like, not yet following text; English collapsed with the new tokenizer |
