@@ -83,7 +83,7 @@ def process_shard(
             speaker = str(rec[speaker_col]) if speaker_col else source
             rows.append(
                 {
-                    "path": str(path),
+                    "path": str(path.resolve()),
                     "duration": round(duration, 3),
                     "transcript": text,
                     "speaker": f"{source}:{speaker}",
