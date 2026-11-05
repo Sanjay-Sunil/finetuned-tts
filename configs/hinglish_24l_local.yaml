@@ -1,4 +1,4 @@
-# Laptop variant of hinglish_24l.yaml for an 8 GB GPU (RTX 4060 Laptop):
+# Memory-efficient variant of hinglish_24l.yaml:
 # micro-batches of 4 accumulated to an effective batch of 64, clips capped at
 # 12 s, run with hinglish_tts.train_lowmem (8-bit AdamW, CPU-side EMA).
 # Paths are relative to third_party/pocket-tts, the working directory for training.
@@ -32,7 +32,7 @@ optim:
 
 run_dir: ../../runs/hinglish_24l_local
 batch_size: 4
-grad_accum_steps: 16  # effective batch 64 on an 8 GB GPU
+grad_accum_steps: 16  # effective batch 64
 max_steps: 3000
 compile: false  # torch.compile warm-up costs more than it saves on a short run
 stats_ema_steps: 1000

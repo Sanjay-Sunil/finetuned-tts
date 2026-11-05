@@ -10,3 +10,4 @@ third_party/
 .env
 !voices/*.wav
 dist/
+NOTES.md

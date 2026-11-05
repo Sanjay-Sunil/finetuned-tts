@@ -1,4 +1,4 @@
-"""Run Pocket TTS training on a small (8 GB) GPU.
+"""Run Pocket TTS training with a reduced GPU memory footprint.
 
 Wraps the upstream `training/train.py` unchanged and swaps two pieces that
 dominate memory for a 24-layer model:

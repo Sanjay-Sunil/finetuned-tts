@@ -31,7 +31,7 @@ optim:
 
 run_dir: ../../runs/hinglish_24l_local
 batch_size: 4
-grad_accum_steps: 16  # effective batch 64 on an 8 GB GPU
+grad_accum_steps: 16  # effective batch 64
 max_steps: 6000
 compile: false  # torch.compile warm-up costs more than it saves on a short run
 stats_ema_steps: 1000

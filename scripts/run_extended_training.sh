@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Unattended schedule for the laptop run:
+# Unattended schedule for the training run:
 #   1. wait for the running 3,000-step job to exit,
 #   2. resume the same run to 6,000 steps (configs/hinglish_24l_local_6k.yaml),
 #   3. meanwhile, every 1,000-step checkpoint is hard-linked into keep/ (so the
 #      trainer's own rotation cannot delete it) and scored with eval_cer.
 # Results: outputs/eval/results.json and outputs/eval/summary.tsv.
-# Sleep and lid-close suspend are inhibited for the whole schedule.
+# Run it under systemd-inhibit so the machine does not sleep mid-schedule.
 set -u
 cd "$(dirname "$0")/.."
 ROOT=$(pwd)
