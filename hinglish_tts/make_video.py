@@ -86,6 +86,19 @@ def clip(tmp: Path, name: str, sentence: str, label: str, color: str, wav: str) 
     return out
 
 
+def still(tmp: Path, name: str, png: Path, seconds: float) -> Path:
+    """A slide image held for `seconds`, with silent audio so the concat stays in sync."""
+    out = tmp / f"{name}.mp4"
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", str(png),
+         "-f", "lavfi", "-i", f"anullsrc=r=24000:cl=mono:d={seconds}",
+         "-vf", f"scale={W}:{H},format=yuv420p", "-t", f"{seconds}", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+         "-r", "25", "-c:a", "aac", "-ar", "24000", str(out)],
+        check=True,
+    )
+    return out
+
+
 def wrap(text: str, width: int = 44) -> str:
     lines, cur = [], ""
     for word in text.split():
@@ -98,7 +111,11 @@ def wrap(text: str, width: int = 44) -> str:
 
 
 @app.command()
-def main(out: Annotated[str, typer.Option()] = "outputs/demo.mp4"):
+def main(
+    out: Annotated[str, typer.Option()] = "outputs/demo.mp4",
+    pages: Annotated[str, typer.Option(help="folder of decision slides (page_N.png) appended at the end")] = "outputs/decisions",
+    page_seconds: Annotated[float, typer.Option()] = 5.0,
+):
     baseline = Path("samples/baseline_sentences.txt").read_text().splitlines()
     extra = Path("samples/demo_extra_sentences.txt").read_text().splitlines()
     with tempfile.TemporaryDirectory() as d:
@@ -118,6 +135,8 @@ def main(out: Annotated[str, typer.Option()] = "outputs/demo.mp4"):
             ("Model: huggingface.co/zxnjxd/pocket-tts-finetuned (private)", 30, 300),
             ("Code: github.com/Sanjay-Sunil/finetuned-tts", 30, 360),
         ], 4))
+        for i, png in enumerate(sorted(Path(pages).glob("page_*.png")), 1):
+            parts.append(still(tmp, f"page{i}", png, page_seconds))
         listing = tmp / "list.txt"
         listing.write_text("".join(f"file '{p}'\n" for p in parts))
         Path(out).parent.mkdir(parents=True, exist_ok=True)
