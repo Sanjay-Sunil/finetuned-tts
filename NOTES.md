@@ -89,3 +89,16 @@ Running log: decisions (with my reasoning), learnings, failures. Becomes the REA
 6. Fill RESULTS_TABLE / APPROACH / LIMITATIONS in README.md and docs/model_card.md, create a fine-grained read-only token for the two repos, record the video, send the email.
 
 - Finalists for the listening check: step 4000 EMA and step 5000 EMA (`outputs/finalists/`). Extending past 6,000 steps would not help: held-out CER rises after 4,000–5,000 steps.
+
+## Release (2026-11-05)
+- Model: step 4000 EMA, exported with `hinglish_tts/package_hf.py` to the private repo zxnjxd/pocket-tts-finetuned (weights, tokenizer, config, card, voice prompt, before/after samples, demo video).
+- Verified from an empty HF cache with only a token: `pocket-tts generate --config hf://zxnjxd/pocket-tts-finetuned/config.yaml ...` downloads, loads and speaks.
+- Demo video: `samples/demo.mp4` (`hinglish_tts/make_video.py`): title card, then before/after for sentences 4, 5, 8 and two unseen sentences.
+- Failures worth remembering: Modal card declined → laptop training; latent precompute OOM inside the trainer → run it separately; ffmpeg `showwaves` rendered nothing over an overlay → static `showwavespic` + moving playhead; Noto Sans Devanagari lacks Latin glyphs → Hind font for mixed-script text.
+
+## What I'd do with more compute
+- 100+ h of human-verified Hindi and Indian-English speech (full Rasa, SPICOR, IndicTTS English) so English words get Indian pronunciation and the model stops overfitting at ~4k steps.
+- Real code-mixed recordings for evaluation, and a code-mixed CER using an ASR that handles both scripts.
+- Distil the 24-layer teacher into the 6-layer CPU student (`depth_distill.yaml`).
+- A Roman-Hindi input path (transliteration to Devanagari before tokenization).
+- A listening test with several native speakers instead of one listener.
