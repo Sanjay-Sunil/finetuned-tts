@@ -1,0 +1,6 @@
+pocket-tts==4.0.1
+streamlit==1.66.1
+sentencepiece
+scipy
+soundfile
+typer

@@ -1,7 +1,8 @@
 """Render the project's key decisions as hand-drawn (Excalidraw-style) slides.
 
 Shapes are drawn with rough.js, text in the Kalam handwriting font (Devanagari
-+ Latin), and each 1280x720 page is screenshotted with headless Chromium.
++ Latin). The same HTML is shown live in the Streamlit app (`page_html`) and
+screenshotted with headless Chromium for the demo video.
 
     python -m hinglish_tts.decision_pages --out-dir outputs/decisions
 """
@@ -28,24 +29,20 @@ BLUE, GREEN, YELLOW, RED, GREY, VIOLET = "#a5d8ff", "#b2f2bb", "#ffec99", "#ffc9
 #               ["poly", [[x, y], ...], color]
 PAGES = [
     [
-        ["text", 640, 90, 52, "How it was built: 5 decisions", "#1e1e1e", "middle"],
-        ["box", 50, 230, 200, 120, BLUE, ["1. Data"], 30],
-        ["box", 295, 230, 200, 120, YELLOW, ["2. Script &", "tokenizer"], 30],
-        ["box", 540, 230, 200, 120, VIOLET, ["3. Model"], 30],
-        ["box", 785, 230, 200, 120, RED, ["4. Evaluation"], 30],
-        ["box", 1030, 230, 200, 120, GREEN, ["5. Checkpoint"], 30],
-        ["arrow", 252, 290, 293, 290], ["arrow", 497, 290, 538, 290],
-        ["arrow", 742, 290, 783, 290], ["arrow", 987, 290, 1028, 290],
-        ["text", 150, 410, 22, "12.3 h of human-", "#1e1e1e", "middle"],
-        ["text", 150, 440, 22, "verified speech", "#1e1e1e", "middle"],
-        ["text", 395, 410, 22, "Devanagari + Latin,", "#1e1e1e", "middle"],
-        ["text", 395, 440, 22, "new 4k SentencePiece", "#1e1e1e", "middle"],
-        ["text", 640, 410, 22, "24-layer teacher,", "#1e1e1e", "middle"],
-        ["text", 640, 440, 22, "new-language recipe", "#1e1e1e", "middle"],
-        ["text", 885, 410, 22, "per-language CER", "#1e1e1e", "middle"],
-        ["text", 885, 440, 22, "+ ASR floor + listening", "#1e1e1e", "middle"],
-        ["text", 1130, 410, 22, "step 4000 (EMA)", "#1e1e1e", "middle"],
-        ["text", 1130, 440, 22, "by CER + by ear", "#1e1e1e", "middle"],
+        ["text", 640, 90, 52, "How it was built: 4 decisions", "#1e1e1e", "middle"],
+        ["box", 90, 230, 230, 120, BLUE, ["1. Data"], 30],
+        ["box", 380, 230, 230, 120, YELLOW, ["2. Script &", "tokenizer"], 30],
+        ["box", 670, 230, 230, 120, VIOLET, ["3. Model"], 30],
+        ["box", 960, 230, 230, 120, GREEN, ["4. Checkpoint"], 30],
+        ["arrow", 322, 290, 378, 290], ["arrow", 612, 290, 668, 290], ["arrow", 902, 290, 958, 290],
+        ["text", 205, 410, 22, "12.3 h of human-", "#1e1e1e", "middle"],
+        ["text", 205, 440, 22, "verified speech", "#1e1e1e", "middle"],
+        ["text", 495, 410, 22, "Devanagari + Latin,", "#1e1e1e", "middle"],
+        ["text", 495, 440, 22, "new 4k SentencePiece", "#1e1e1e", "middle"],
+        ["text", 785, 410, 22, "24-layer teacher,", "#1e1e1e", "middle"],
+        ["text", 785, 440, 22, "new-language recipe", "#1e1e1e", "middle"],
+        ["text", 1075, 410, 22, "step 4000 (EMA)", "#1e1e1e", "middle"],
+        ["text", 1075, 440, 22, "by CER + by ear", "#1e1e1e", "middle"],
         ["text", 640, 600, 26, "every choice + its reason: README, Decisions taken", "#495057", "middle"],
     ],
     [
@@ -83,7 +80,7 @@ PAGES = [
         ["text", 640, 680, 24, "Script: Devanagari for Hindi, Latin for English (matches the human transcripts)", "#495057", "middle"],
     ],
     [
-        ["text", 640, 70, 46, "5 · Which checkpoint?", "#1e1e1e", "middle"],
+        ["text", 640, 70, 46, "4 · Which checkpoint?", "#1e1e1e", "middle"],
         ["line", 120, 600, 1000, 600, "#1e1e1e", False], ["line", 120, 600, 120, 130, "#1e1e1e", False],
         ["text", 560, 650, 22, "training step", "#495057", "middle"],
         ["text", 130, 112, 22, "CER", "#495057", "start"],
@@ -111,15 +108,17 @@ PAGES = [
 ]
 
 HTML = """<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam&display=block">
 <style>
-@font-face { font-family: Hand; src: url("file://FONT_PATH"); }
 html, body { margin: 0; background: #ffffff; }
-svg { display: block; }
-text { font-family: Hand, sans-serif; }
+svg { display: block; width: 100%; max-width: Wpx; height: auto; margin: 0 auto; }
+text { font-family: Kalam, sans-serif; }
 </style>
 <script src="ROUGH_JS"></script></head><body>
-<svg id="s" width="W" height="H" viewBox="0 0 W H"></svg>
+<svg id="s" viewBox="0 0 W H"></svg>
 <script>
+document.fonts.load('24px Kalam').finally(draw);
+function draw() {
 const els = ELEMENTS;
 const svg = document.getElementById('s');
 const rc = rough.svg(svg);
@@ -165,25 +164,29 @@ for (const e of els) {
     for (const [x, y] of pts) svg.appendChild(rc.circle(x, y, 12, opt({stroke: c, fill: c, fillStyle: 'solid'})));
   }
 }
+}
 </script></body></html>"""
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
+def page_html(page: list) -> str:
+    """Self-contained HTML for one slide (rough.js + Kalam from public CDNs)."""
+    return (HTML.replace("ELEMENTS", json.dumps(page, ensure_ascii=False))
+            .replace("ROUGH_JS", ROUGH_JS).replace("Wpx", f"{W}px")
+            .replace("0 0 W H", f"0 0 {W} {H}"))
+
+
 @app.command()
 def main(
     out_dir: Annotated[str, typer.Option()] = "outputs/decisions",
-    font: Annotated[str, typer.Option()] = str(Path.home() / ".local/share/fonts/kalam/Kalam-Regular.ttf"),
     chromium: Annotated[str, typer.Option()] = "chromium",
 ):
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as d:
         for i, page in enumerate(PAGES, 1):
-            html = (HTML.replace("ELEMENTS", json.dumps(page, ensure_ascii=False))
-                    .replace("FONT_PATH", font).replace("ROUGH_JS", ROUGH_JS)
-                    .replace('"W"', f'"{W}"').replace('"H"', f'"{H}"')
-                    .replace("0 0 W H", f"0 0 {W} {H}"))
+            html = page_html(page)
             src = Path(d) / f"page_{i}.html"
             src.write_text(html)
             png = out / f"page_{i}.png"

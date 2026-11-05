@@ -4,6 +4,19 @@ A fine-tune of [Kyutai Pocket TTS](https://github.com/kyutai-labs/pocket-tts) (2
 
 - Model (private): `https://huggingface.co/zxnjxd/pocket-tts-finetuned`
 - Training data (private): `https://huggingface.co/datasets/zxnjxd/pocket-tts-finetuned-data`
+- Demo page: https://huggingface.co/spaces/zxnjxd/hinglish-pocket-tts (before/after for 10 built-in sentences, plus the decision slides)
+- Demo video: `samples/demo.mp4`
+
+## Interactive demo
+
+```bash
+pip install -r space/requirements.txt
+HF_TOKEN=<read token> streamlit run app.py
+```
+
+Type any Hinglish sentence (or press **Random sample**), then press **Play** under **Before** (released Pocket TTS) and **After** (this model); both clone the same Indian voice prompt. The second tab draws the key decisions. Set `HINGLISH_CHECKPOINT=<path/to/checkpoint.pt>` to load a local training checkpoint instead of the Hub model.
+
+The hosted demo page is a static build of the same layout (`hinglish_tts/build_static_space.py`) that plays pre-generated audio, because free Hugging Face Spaces only serve static files. `space/` holds a Docker setup that runs the live app on a Space with paid hardware (`hinglish_tts/deploy_space.py`).
 
 ## Quick start
 
@@ -139,4 +152,7 @@ python -m hinglish_tts.package_hf runs/hinglish_24l_local/checkpoint_00003000.pt
 | `hinglish_tts/package_hf.py` | Export a checkpoint in the official Pocket TTS layout and upload |
 | `configs/` | Training configs (gradient-accumulation and single-GPU batch 64) and the inference config |
 | `modal_app.py` | Same pipeline on Modal |
-| `samples/` | Baseline sentences and before/after audio |
+| `app.py` | Streamlit demo: live before/after synthesis and the decision slides |
+| `hinglish_tts/decision_pages.py` | Hand-drawn decision slides (rough.js), used by the app, the static page and the video |
+| `hinglish_tts/build_static_space.py`, `space/` | Hosted demo page and Docker Space setup |
+| `samples/` | Baseline sentences, before/after audio and the demo video |
