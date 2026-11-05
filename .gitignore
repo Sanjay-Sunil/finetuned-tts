@@ -9,3 +9,4 @@ third_party/
 !samples/**/*.wav
 .env
 !voices/*.wav
+dist/
